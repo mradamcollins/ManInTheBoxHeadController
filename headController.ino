@@ -100,6 +100,10 @@ void shakeHead(int shake_index)
 void loop() 
 { 
   if ( potValueChanged() )
+  {
+    cur_routine_index = NORMAL;
+  }
+  
   switch (cur_routine_index) 
   {   
    case LEFT_SHAKE:
@@ -108,6 +112,7 @@ void loop()
    case RIGHT_SHAKE:
      shakeHead(RIGHT_SHAKE);
    break;
+   case NORMAL: // Same as default
    default:
      readPot();
    
