@@ -63,9 +63,9 @@ void rightShakeISR()
 
 void setup() 
 { 
-  myservo.attach(9);  // attaches the servo on pin 9 to the servo object 
-  attachInterrupt(0, leftShake, RISING);
-  attachInterrupt(1, rightShake, RISING);
+  headServo.attach(9);  // attaches the servo on pin 9 to the servo object 
+  attachInterrupt(0, leftShakeISR, RISING);
+  attachInterrupt(1, rightShakeISR, RISING);
 } 
 
 boolean potValueChanged()
@@ -77,9 +77,24 @@ boolean potValueChanged()
     return false;
   } else
   {
-    head_pot_val = new_pot_val;
+    head_pot_val = new_head_pot_val;
     return true;
   }
+}
+
+void readPot()
+{
+   int val = analogRead(head_pot_pin);            // reads the value of the potentiometer (value between 0 and 1023) 
+  val = map(val, 0, 1023, 0, 179);     // scale it to use it with the servo (value between 0 and 180) 
+  headServo.write(val);                  // sets the servo position according to the scaled value 
+}
+
+void shakeHead(int shake_index)
+{
+ // TODO
+//if shake_index == LEFT_SHAKE
+
+//if shake_index == RIGHT_SHAKE
 }
  
 void loop() 
@@ -88,17 +103,16 @@ void loop()
   switch (cur_routine_index) 
   {   
    case LEFT_SHAKE:
-   
+     shakeHead(LEFT_SHAKE);
    break;
    case RIGHT_SHAKE:
-   
+     shakeHead(RIGHT_SHAKE);
    break;
-   deafult:
+   default:
+     readPot();
    
-  }
+  };
   
-  val = analogRead(potpin);            // reads the value of the potentiometer (value between 0 and 1023) 
-  val = map(val, 0, 1023, 0, 179);     // scale it to use it with the servo (value between 0 and 180) 
-  myservo.write(val);                  // sets the servo position according to the scaled value 
+ 
   delay(15);                           // waits for the servo to get there 
 } 
