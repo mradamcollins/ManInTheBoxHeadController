@@ -89,12 +89,37 @@ void readPot()
   headServo.write(val);                  // sets the servo position according to the scaled value 
 }
 
+// Global variables for shake routine
+int cur_shake_val;                    // The global variable used to remember current shake state
+int shake_left_bound = 0;
+int shake_right_bound = 180;
+int shake_speed = 1;
+const int shake_range = 20;
 void shakeHead(int shake_index)
-{
- // TODO
-//if shake_index == LEFT_SHAKE
-
-//if shake_index == RIGHT_SHAKE
+{ 
+  
+  if (restart_routine_flag == true)
+  {
+    if (shake_index == LEFT_SHAKE)
+    {
+      shake_left_bound = 0;
+      shake_right_bound = 0 + shake_range;
+      cur_shake_val = 0 + shake_range/2;
+    } else if (shake_index == RIGHT_SHAKE)
+    {
+      shake_left_bound = 180 - shake_range;
+      shake_right_bound = 180;
+      cur_shake_val = 180 - shake_range/2;
+    }
+    headServo.write(cur_shake_val);    
+    cur_shake_val += shake_speed;
+    
+    if ((cur_shake_val >= shake_right_bound) || (cur_shake_val <= shake_left_bound))
+    {
+     shake_speed = -shake_speed; 
+     cur_shake_val += shake_speed;
+    }    
+  }    
 }
  
 void loop() 
