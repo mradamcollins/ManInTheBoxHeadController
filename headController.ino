@@ -11,6 +11,12 @@ int head_pot_val;        // Value of the head pot.
 // using intterupt pins
 const int left_but_pin   = 2;  // Pin to connect the left hand button to
 const int right_but_pin  = 3;  // Pin to connect the right hand button to
+int last_left_time;
+int last_right_time;
+
+int left_but_state;
+int right_but_state;
+const int debounce_milli = 50; // The amount of milliseconds to use for switch debounce
 
 // Routine index
 volatile int cur_routine_index = 0;            // Index to switch on in the main loop()
@@ -20,52 +26,44 @@ const int NORMAL       = 0;
 const int LEFT_SHAKE   = 1;
 const int RIGHT_SHAKE  = 2;
 
-int left_but_state;
-int right_but_state;
-const int debounce_milli = 50; // The amount of milliseconds to use for switch debounce
-
 // LEDs - Eye leds are connected in parallel with wires for indevidual RGB values;
 // Using PWM pins to allow pulsing
-const int eyes_r_pin     = 3;
-const int eyes_g_pin     = 5;
-const int eyes_b_pin     = 6;
+const int LEFT_EYE_PIN   = 10;
+const int RIGHT_EYE_PIN  = 11;
 
-int eyes_r_val;
-int eyes_g_val;
-int eyes_b_val;
+int left_eye_val;
+int right_eye_val;
 
-// Helper functions
-void eyesWhite()
+volatile boolean shine = true;
+void leftButtonISR()
 {
-   eyes_r_val = 255;
-   eyes_g_val = 255;
-   eyes_b_val = 255; 
+  if (millis() >= (last_left_time + debounce_milli))
+  {
+    shine = !shine;
+     restart_routine_flag = true;
+     cur_routine_index = LEFT_SHAKE;
+     last_left_time = millis();
+  }
 }
 
-void eyesOff()
+void rightButtonISR()
 {
-   eyes_r_val = 0;
-   eyes_g_val = 0;
-   eyes_b_val = 0; 
-}
-
-void leftShakeISR()
-{
-  restart_routine_flag = true;
-  cur_routine_index = LEFT_SHAKE;
-}
-
-void rightShakeISR()
-{
-  restart_routine_flag = true;
-  cur_routine_index = RIGHT_SHAKE;  
+  if (millis() >= (last_right_time + debounce_milli))
+  {
+    shine = !shine;
+     restart_routine_flag = true;
+     cur_routine_index = RIGHT_SHAKE;
+     last_right_time = millis();
+  } 
 }
 
 void setup() 
 { 
   headServo.attach(9);  // attaches the servo on pin 9 to the servo object 
-  attachInterrupt(0, leftShakeISR, RISING);
-  attachInterrupt(1, rightShakeISR, RISING);
+  attachInterrupt(0, leftButtonISR, RISING);
+  attachInterrupt(1, rightButtonISR, RISING);
+  pinMode(LEFT_EYE_PIN, OUTPUT);
+  pinMode(RIGHT_EYE_PIN, OUTPUT);
 } 
 
 boolean potValueChanged()
@@ -124,25 +122,16 @@ void shakeHead(int shake_index)
  
 void loop() 
 { 
-  if ( potValueChanged() )
-  {
-    cur_routine_index = NORMAL;
-  }
-  
-  switch (cur_routine_index) 
-  {   
-   case LEFT_SHAKE:
-     shakeHead(LEFT_SHAKE);
-   break;
-   case RIGHT_SHAKE:
-     shakeHead(RIGHT_SHAKE);
-   break;
-   case NORMAL: // Same as default
-   default:
-     readPot();
-   
-  };
-  
  
+  if (shine)
+  {
+    digitalWrite(LEFT_EYE_PIN, HIGH);
+    digitalWrite(RIGHT_EYE_PIN, HIGH);
+  } else
+  {
+    digitalWrite(LEFT_EYE_PIN, LOW);
+    digitalWrite(RIGHT_EYE_PIN, LOW);
+    
+  }
   delay(15);                           // waits for the servo to get there 
 } 
