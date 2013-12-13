@@ -13,9 +13,6 @@ const int left_but_pin   = 2;  // Pin to connect the left hand button to
 const int right_but_pin  = 3;  // Pin to connect the right hand button to
 int last_left_time;
 int last_right_time;
-
-int left_but_state;
-int right_but_state;
 const int debounce_milli = 50; // The amount of milliseconds to use for switch debounce
 
 // Routine index
@@ -28,7 +25,7 @@ const int RIGHT_SHAKE  = 2;
 
 // LEDs - Eye leds are connected in parallel with wires for indevidual RGB values;
 // Using PWM pins to allow pulsing
-const int LEFT_EYE_PIN   = 10;
+const int LEFT_EYE_PIN   = 5;
 const int RIGHT_EYE_PIN  = 11;
 
 int left_eye_val;
