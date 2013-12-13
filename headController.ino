@@ -56,23 +56,27 @@ void rightButtonISR()
 
 void setup() 
 { 
+  Serial.begin(115200);
   headServo.attach(9);  // attaches the servo on pin 9 to the servo object 
   attachInterrupt(0, leftButtonISR, RISING);
   attachInterrupt(1, rightButtonISR, RISING);
   pinMode(LEFT_EYE_PIN, OUTPUT);
   pinMode(RIGHT_EYE_PIN, OUTPUT);
+  head_pot_val = analogRead(head_pot_pin);
 } 
 
 boolean potValueChanged()
 {
   int new_head_pot_val = analogRead(head_pot_pin);
+
   // if current value is within pot_noise of last val return no change
-  if (( new_head_pot_val <= (head_pot_val + pot_noise) ) || ( new_head_pot_val >= (head_pot_val - pot_noise) ))
+  if (( new_head_pot_val <= (head_pot_val + pot_noise) ) && ( new_head_pot_val >= (head_pot_val - pot_noise) ))
   {
     return false;
   } else
   {
     head_pot_val = new_head_pot_val;
+    Serial.println("Pot Changed");
     return true;
   }
 }
@@ -89,12 +93,15 @@ int cur_shake_val;                    // The global variable used to remember cu
 int shake_left_bound = 10;
 int shake_right_bound = 170;
 int shake_speed = 1;
+int num_shakes = 0;
+const int total_shakes = 5;
 const int shake_range = 20;
 void shakeHead(int shake_index)
 { 
   // check for restart
   if (restart_routine_flag == true)
   {
+    num_shakes = 0;
     if (shake_index == LEFT_SHAKE)
     {
       shake_left_bound = 0;
@@ -113,10 +120,15 @@ void shakeHead(int shake_index)
   cur_shake_val += shake_speed;
     
   // Check for limits and reverse direction if needed      
+  if (num_shakes >= total_shakes)
+  {
+    cur_routine_index = NORMAL;
+  }
   if ((cur_shake_val >= shake_right_bound) || (cur_shake_val <= shake_left_bound))
   {
    shake_speed = -shake_speed; 
    cur_shake_val += shake_speed;
+   num_shakes += 1;
   }    
 }
  
@@ -128,6 +140,7 @@ void loop()
     cur_routine_index = NORMAL;
     readPot(); 
   }
+  Serial.println(cur_routine_index);
   if (cur_routine_index != NORMAL)
   { 
     shakeHead(cur_routine_index); // ASSUMES only 3 index values this will need to change if more are added
